@@ -80,16 +80,24 @@ export default function ChatPage() {
 
   const fetchChatHistory = async (id: string) => {
     console.log("Fetching chat history for ID:", id);
-    setMessages([
-      {
-        id: uuidv4(),
-        role: "agent",
-        content: `GM Brother, how can I help you today?`,
-        timestamp: new Date().toLocaleTimeString(),
-        user: "Agent",
-      },
-    ]);
-  };
+    try {
+        const response = await fetch("/api/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: "Hello, fetch previous messages." })
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch chat history");
+        }
+
+        const data = await response.json();
+        setMessages([{ id: uuidv4(), role: "agent", content: data.response, timestamp: new Date().toLocaleTimeString(), user: "Agent" }]);
+    } catch (error) {
+        console.error("Error fetching chat history:", error);
+        setMessages([{ id: uuidv4(), role: "agent", content: "Error fetching chat history. Please try again.", timestamp: new Date().toLocaleTimeString(), user: "Agent" }]);
+    }
+};
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
